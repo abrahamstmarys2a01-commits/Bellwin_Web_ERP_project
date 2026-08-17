@@ -205,7 +205,7 @@ const AssetMaster = () => {
         </div>
 
         <div>
-          <form onSubmit={handleSave} className="space-y-4 form-spiritual-bg bg-white p-6 border border-gray-200">
+          <form onSubmit={handleSave} className="space-y-4 form-spiritual-bg">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Asset ID (Auto)"
