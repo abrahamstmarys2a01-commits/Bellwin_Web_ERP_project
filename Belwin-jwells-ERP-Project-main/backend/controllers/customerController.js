@@ -258,7 +258,7 @@ const getCustomers = async (req, res, next) => {
 
         if (status)           query.status = status;
         if (gender)           query.gender = gender;
-        if (branch && branch !== 'All') query.branchName = branch;
+        if (branch && branch !== 'All') query.branchName = new RegExp('^' + branch.trim() + '$', 'i');
         if (city)             query.city   = { $regex: city, $options: 'i' };
         if (startDate || endDate) {
             query.createdAt = {};

@@ -6,17 +6,24 @@ import api from '../../../services/api';
 import PageHeader from '../../../components/ui/PageHeader';
 import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
+import BranchSelect from '../../../components/ui/BranchSelect';
 
 const BorrowerList = () => {
   const navigate = useNavigate();
   const [borrowers, setBorrowers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedBranch, setSelectedBranch] = useState('');
 
   const fetchBorrowers = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/customers');
+      const res = await api.get('/customers', {
+        params: {
+          limit: 10000,
+          branch: selectedBranch
+        }
+      });
       setBorrowers(res.data.data || res.data.customers || res.data || []);
     } catch (err) {
       console.error('API error fetching borrowers from DB', err);
@@ -29,7 +36,7 @@ const BorrowerList = () => {
 
   useEffect(() => {
     fetchBorrowers();
-  }, []);
+  }, [selectedBranch]);
 
   const filteredBorrowers = borrowers.filter(b => {
     const q = searchQuery.toLowerCase();
@@ -48,16 +55,24 @@ const BorrowerList = () => {
       />
 
       <div className="p-6">
-        <div className="relative mb-6">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
+          <div className="flex-1 relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              className="search-input block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-none leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition duration-150 ease-in-out"
+              placeholder="Search by ID, Name or Phone Number..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-          <input
-            type="text"
-            className="search-input block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-none leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm transition duration-150 ease-in-out"
-            placeholder="Search by ID, Name or Phone Number..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+          <BranchSelect
+            value={selectedBranch}
+            onChange={(e) => setSelectedBranch(e.target.value)}
+            showAllOption
+            containerClassName="w-full md:w-64"
           />
         </div>
 

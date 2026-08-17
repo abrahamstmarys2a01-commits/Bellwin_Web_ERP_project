@@ -76,7 +76,7 @@ const getEmployees = async (req, res, next) => {
         let query = {};
         
         if (status) query.status = new RegExp(status, 'i');
-        if (branch) query.branch = branch;
+        if (branch) query.branch = new RegExp('^' + branch.trim() + '$', 'i');
         if (search) {
             query.$or = [
                 { firstName: { $regex: search, $options: 'i' } },
