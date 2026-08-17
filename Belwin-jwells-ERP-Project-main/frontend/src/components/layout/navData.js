@@ -200,5 +200,8 @@ export const ADMIN_NAV = [
   },
   {
     id: 'denomination', label: 'Denomination', icon: Banknote, path: '/admin/denomination'
+  },
+  {
+    id: 'asset', label: 'Asset Management', icon: Box, path: '/admin/assets'
   }
 ];
