@@ -242,7 +242,13 @@ const LockerMaster = () => {
         renderRow={(locker) => (
           <TR key={locker._id}>
             <TD className="font-semibold text-gray-700">{locker.address}</TD>
-            <TD className="font-bold text-gray-800">{locker.lockerName}</TD>
+            <TD 
+              className="font-bold text-green-600 hover:text-green-800 cursor-pointer hover:underline"
+              onClick={() => handleOpenEdit(locker)}
+              title="Click to edit locker"
+            >
+              {locker.lockerName}
+            </TD>
             <TD>
               <Badge variant={locker.status === 'Active' ? 'success' : 'danger'}>
                 {locker.status}
