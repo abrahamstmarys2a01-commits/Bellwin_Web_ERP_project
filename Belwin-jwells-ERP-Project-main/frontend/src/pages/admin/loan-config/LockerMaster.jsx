@@ -11,10 +11,9 @@ import DataTable from '../../../components/ui/DataTable';
 import ConfirmDialog from '../../../components/ui/ConfirmDialog';
 import { TD, TR } from '../../../components/ui/Table';
 
-const STORAGE_KEY = 'bellwin_lockers';
-
 const LockerMaster = () => {
   const [lockers, setLockers] = useState([]);
+  const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   
@@ -22,8 +21,8 @@ const LockerMaster = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingLocker, setEditingLocker] = useState(null);
   const [formData, setFormData] = useState({
-    lockerName: '',
-    address: '',
+    lockerName: '', // UI Label: Locker ID
+    address: '',    // UI Label: Branch Name
     status: 'Active'
   });
 
@@ -43,8 +42,25 @@ const LockerMaster = () => {
     }
   };
 
+  // Fetch branches
+  const fetchBranches = async () => {
+    try {
+      const res = await api.get('/master/branch');
+      setBranches(res.data.branches || res.data || []);
+    } catch (err) {
+      console.error('Failed to fetch branches', err);
+      // Fallback
+      setBranches([
+        { _id: '1', branchName: 'TRICHY' },
+        { _id: '2', branchName: 'PUDUKKOTTAI' },
+        { _id: '3', branchName: 'THANJAVUR' }
+      ]);
+    }
+  };
+
   useEffect(() => {
     fetchLockers();
+    fetchBranches();
   }, []);
 
   const handleOpenAdd = () => {
@@ -69,18 +85,21 @@ const LockerMaster = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!formData.lockerName || !formData.address) return alert('Name and Address are required');
+    if (!formData.lockerName || !formData.address) {
+      return toast.error('Locker ID and Branch Name are required');
+    }
 
     setLoading(true);
     try {
       if (editingLocker) {
         await api.put(`/loan-config/locker/${editingLocker._id}`, formData);
+        toast.success('Locker updated successfully');
       } else {
         await api.post('/loan-config/locker', formData);
+        toast.success('Locker added successfully');
       }
       setIsFormOpen(false);
       fetchLockers();
-      toast.success(editingLocker ? 'Locker updated successfully' : 'Locker added successfully');
     } catch (err) {
       console.error(err);
       toast.error(err.response?.data?.message || 'Failed to save locker');
@@ -110,12 +129,6 @@ const LockerMaster = () => {
     l.address?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const getStatusBadgeVariant = (status) => {
-    if (status === 'Available') return 'success';
-    if (status === 'Occupied') return 'warning';
-    return 'danger';
-  };
-
   if (isFormOpen) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-6 animate-fade-in">
@@ -135,32 +148,36 @@ const LockerMaster = () => {
 
         <div className="">
           <form onSubmit={handleSave} className="space-y-4 form-spiritual-bg">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Locker Name"
-              required
-              value={formData.lockerName}
-              onChange={(e) => setFormData({ ...formData, lockerName: e.target.value.toUpperCase() })}
-              placeholder="e.g. LKR-001"
-            />
-            <Input
-              label="Address"
-              required
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              placeholder="e.g. 123 Main St, Springfield"
-            />
-          </div>
-          
-          <Select
-            label="Status"
-            value={formData.status}
-            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-          >
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-          </Select>
-          
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Locker ID"
+                required
+                value={formData.lockerName}
+                onChange={(e) => setFormData({ ...formData, lockerName: e.target.value.toUpperCase() })}
+                placeholder="e.g. LKR-001"
+              />
+              <Select
+                label="Branch Name"
+                required
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              >
+                <option value="">Select Branch</option>
+                {branches.map(b => (
+                  <option key={b._id} value={b.branchName}>{b.branchName}</option>
+                ))}
+              </Select>
+            </div>
+            
+            <Select
+              label="Status"
+              value={formData.status}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+            >
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </Select>
+            
             <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-100 mt-6">
               <Button 
                 type="button" 
@@ -179,7 +196,7 @@ const LockerMaster = () => {
                 Save Locker
               </Button>
             </div>
-        </form>
+          </form>
         </div>
       </div>
     );
@@ -189,7 +206,7 @@ const LockerMaster = () => {
     <div className="max-w-7xl mx-auto px-4 py-6 animate-fade-in">
       <PageHeader
         title="Locker Master"
-        subtitle="Manage secure physical safe lockers, branch allocations, weight capacity limits, and availability."
+        subtitle="Configure and manage secure physical safe lockers, branch allocations, and availability."
         icon={Key}
         actions={
           <Button onClick={handleOpenAdd} icon={Plus} variant="primary">
@@ -207,7 +224,7 @@ const LockerMaster = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by ID, Name or Phone Number..."
+            placeholder="Search by Locker ID or Branch..."
             className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-none text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 bg-gray-50"
           />
         </div>
@@ -215,8 +232,8 @@ const LockerMaster = () => {
 
       <DataTable
         headers={[
-          'Locker Name',
-          'Address',
+          'Branch Name',
+          'Locker ID',
           'Status',
           'Actions'
         ]}
@@ -224,8 +241,8 @@ const LockerMaster = () => {
         loading={loading}
         renderRow={(locker) => (
           <TR key={locker._id}>
+            <TD className="font-semibold text-gray-700">{locker.address}</TD>
             <TD className="font-bold text-gray-800">{locker.lockerName}</TD>
-            <TD>{locker.address}</TD>
             <TD>
               <Badge variant={locker.status === 'Active' ? 'success' : 'danger'}>
                 {locker.status}
@@ -252,8 +269,6 @@ const LockerMaster = () => {
           </TR>
         )}
       />
-
-      
 
       <ConfirmDialog
         isOpen={!!deleteId}
