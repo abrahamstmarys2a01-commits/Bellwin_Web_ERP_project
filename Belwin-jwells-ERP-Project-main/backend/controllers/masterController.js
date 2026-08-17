@@ -44,6 +44,13 @@ exports.getBranches = async (req, res, next) => {
 
 exports.createBranch = async (req, res, next) => {
   try {
+    const { branchName } = req.body;
+    if (branchName) {
+      const existingBranch = await Branch.findOne({ branchName: branchName.trim().toUpperCase() });
+      if (existingBranch) {
+        return res.status(400).json({ message: `Branch with name "${branchName.toUpperCase()}" already exists` });
+      }
+    }
     const branch = await Branch.create(req.body);
     res.status(201).json(branch);
   } catch (error) {
@@ -53,6 +60,16 @@ exports.createBranch = async (req, res, next) => {
 
 exports.updateBranch = async (req, res, next) => {
   try {
+    const { branchName } = req.body;
+    if (branchName) {
+      const existingBranch = await Branch.findOne({ 
+        branchName: branchName.trim().toUpperCase(),
+        _id: { $ne: req.params.id }
+      });
+      if (existingBranch) {
+        return res.status(400).json({ message: `Branch with name "${branchName.toUpperCase()}" already exists` });
+      }
+    }
     const branch = await Branch.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after', runValidators: true });
     if (!branch) {
       return res.status(404).json({ message: 'Branch not found' });

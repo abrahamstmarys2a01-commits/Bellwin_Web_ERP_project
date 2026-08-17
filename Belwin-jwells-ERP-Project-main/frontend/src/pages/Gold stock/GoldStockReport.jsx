@@ -309,12 +309,7 @@ const GoldStockReport = () => {
           </div>
           <div>
             <label className={lbl}>Branch</label>
-            <select name="branch" value={filters.branch} onChange={handleFilterChange} className={inp}>
-              <option value="All Branches">All Branches</option>
-              <option value="TRICHY">TRICHY</option>
-              <option value="PUDUKKOTTAI">PUDUKKOTTAI</option>
-              <option value="THANJAVUR">THANJAVUR</option>
-            </select>
+            <BranchSelect name="branch" value={filters.branch} onChange={handleFilterChange} className={inp} />
           </div>
         </div>
       </div>

@@ -9,7 +9,8 @@ const BranchSchema = new mongoose.Schema({
   branchName: {
     type: String,
     required: true,
-    uppercase: true
+    uppercase: true,
+    unique: true
   },
   branchManager: {
     type: String

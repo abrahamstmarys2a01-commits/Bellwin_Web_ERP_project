@@ -337,12 +337,7 @@ const EmployeeForm = () => {
                   description="Role, branch, and joining details."
                 />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Select label="Branch Name" name="branch" value={formData.branch} onChange={handleChange}>
-                    <option value="HEADOFFICE">Head Office</option>
-                    <option value="TRICHY">Trichy</option>
-                    <option value="PUDUKKOTTAI">Pudukkottai</option>
-                    <option value="THANJAVUR">Thanjavur</option>
-                  </Select>
+                  <BranchSelect label="Branch Name" name="branch" value={formData.branch} onChange={handleChange} />
                   <Input label="Joining Date" type="date" name="joiningDate" value={formData.joiningDate} onChange={handleChange} />
                   <Select label="Role" name="role" value={formData.role} onChange={handleChange} required>
                     <option value="">Select a Role</option>

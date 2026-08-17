@@ -288,17 +288,7 @@ const EmployeeList = () => {
               <option value="Inactive">Inactive</option>
             </Select>
 
-            <Select
-              value={filters.branch}
-              onChange={(e) => setFilters((f) => ({ ...f, branch: e.target.value }))}
-              containerClassName="min-w-[130px] flex-1"
-            >
-              <option value="">All Branches</option>
-              <option value="HEADOFFICE">Head Office</option>
-              <option value="TRICHY">Trichy</option>
-              <option value="PUDUKKOTTAI">Pudukkottai</option>
-              <option value="THANJAVUR">Thanjavur</option>
-            </Select>
+            <BranchSelect               value={filters.branch}               onChange={(e) => setFilters((f) => ({ ...f, branch: e.target.value }))}               containerClassName="min-w-[130px] flex-1"              showAllOption />
 
             <button
               onClick={() => { setSearch(''); setFilters({ status: '', branch: '' }); }}

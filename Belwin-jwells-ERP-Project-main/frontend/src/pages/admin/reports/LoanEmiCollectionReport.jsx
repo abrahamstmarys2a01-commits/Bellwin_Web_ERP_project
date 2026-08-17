@@ -169,16 +169,7 @@ const LoanEmiCollectionReport = () => {
         <form onSubmit={handleFilter} className="flex flex-col md:flex-row gap-4 items-end form-spiritual-bg">
           
           <div className="w-full md:w-1/4">
-            <Select 
-              label="Branch Name" 
-              value={filters.branch} 
-              onChange={e => setFilters({...filters, branch: e.target.value})}
-            >
-              <option value="">All Branches</option>
-              <option value="TRICHY">TRICHY</option>
-              <option value="PUDUKKOTTAI">PUDUKKOTTAI</option>
-              <option value="THANJAVUR">THANJAVUR</option>
-            </Select>
+            <BranchSelect                label="Branch Name"                value={filters.branch}                onChange={e => setFilters({...filters, branch: e.target.value})}              showAllOption />
           </div>
 
           <div className="w-full md:w-1/4">

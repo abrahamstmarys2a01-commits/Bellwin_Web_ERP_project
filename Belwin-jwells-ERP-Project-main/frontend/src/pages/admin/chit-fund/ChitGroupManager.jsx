@@ -95,12 +95,7 @@ const ChitGroupManager = () => {
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-gray-700">Branch</label>
-                                    <select name="branch" value={formData.branch} onChange={handleInputChange} className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-[#193F4A]/20 outline-none transition-all" required>
-                                        <option value="">Select Branch</option>
-                                        <option value="TRICHY">TRICHY</option>
-                                        <option value="PUDUKKOTTAI">PUDUKKOTTAI</option>
-                                        <option value="THANJAVUR">THANJAVUR</option>
-                                    </select>
+                                    <BranchSelect name="branch" value={formData.branch} onChange={handleInputChange} className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-[#193F4A]/20 outline-none transition-all" required />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-gray-700">Collection Agent / Employee</label>

@@ -190,23 +190,11 @@ const AddRemittance = () => {
                 </div>
                 <div>
                   <label className={lbl}>From Branch <span className="text-red-500">*</span></label>
-                  <select name="fromBranch" value={cashForm.fromBranch} onChange={handleCashChange} className={inp}>
-                    <option value="Head Office">Head Office</option>
-                    <option value="Main Branch">Main Branch</option>
-                    <option value="TRICHY">TRICHY</option>
-                    <option value="PUDUKKOTTAI">PUDUKKOTTAI</option>
-                    <option value="THANJAVUR">THANJAVUR</option>
-                  </select>
+                  <BranchSelect name="fromBranch" value={cashForm.fromBranch} onChange={handleCashChange} className={inp} />
                 </div>
                 <div>
                   <label className={lbl}>To Branch <span className="text-red-500">*</span></label>
-                  <select name="toBranch" value={cashForm.toBranch} onChange={handleCashChange} className={inp}>
-                    <option value="Head Office">Head Office</option>
-                    <option value="Main Branch">Main Branch</option>
-                    <option value="TRICHY">TRICHY</option>
-                    <option value="PUDUKKOTTAI">PUDUKKOTTAI</option>
-                    <option value="THANJAVUR">THANJAVUR</option>
-                  </select>
+                  <BranchSelect name="toBranch" value={cashForm.toBranch} onChange={handleCashChange} className={inp} />
                 </div>
                 <div>
                   <label className={lbl}>Requested / Sent By <span className="text-red-500">*</span></label>
@@ -298,23 +286,11 @@ const AddRemittance = () => {
                 </div>
                 <div>
                   <label className={lbl}>From Branch <span className="text-red-500">*</span></label>
-                  <select name="fromBranch" value={goldForm.fromBranch} onChange={handleGoldChange} className={inp}>
-                    <option value="Head Office">Head Office</option>
-                    <option value="Main Branch">Main Branch</option>
-                    <option value="TRICHY">TRICHY</option>
-                    <option value="PUDUKKOTTAI">PUDUKKOTTAI</option>
-                    <option value="THANJAVUR">THANJAVUR</option>
-                  </select>
+                  <BranchSelect name="fromBranch" value={goldForm.fromBranch} onChange={handleGoldChange} className={inp} />
                 </div>
                 <div>
                   <label className={lbl}>To Branch <span className="text-red-500">*</span></label>
-                  <select name="toBranch" value={goldForm.toBranch} onChange={handleGoldChange} className={inp}>
-                    <option value="Head Office">Head Office</option>
-                    <option value="Main Branch">Main Branch</option>
-                    <option value="TRICHY">TRICHY</option>
-                    <option value="PUDUKKOTTAI">PUDUKKOTTAI</option>
-                    <option value="THANJAVUR">THANJAVUR</option>
-                  </select>
+                  <BranchSelect name="toBranch" value={goldForm.toBranch} onChange={handleGoldChange} className={inp} />
                 </div>
                 <div>
                   <label className={lbl}>Sent By <span className="text-red-500">*</span></label>
