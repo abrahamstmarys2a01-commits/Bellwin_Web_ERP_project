@@ -9,6 +9,7 @@ const uri = process.env.MONGO_URI || 'mongodb+srv://techview828_db_user:TlGkuJAi
 
 mongoose.connect(uri)
   .then(async () => {
+    const Employee = require('./models/Employee');
     const User = require('./models/User');
     const bcrypt = require('bcryptjs');
     
