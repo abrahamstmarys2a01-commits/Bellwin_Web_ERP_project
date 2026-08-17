@@ -9,6 +9,7 @@ import Button from '../../../components/ui/Button';
 import Badge from '../../../components/ui/Badge';
 import DataTable from '../../../components/ui/DataTable';
 import ConfirmDialog from '../../../components/ui/ConfirmDialog';
+import BranchSelect from '../../../components/ui/BranchSelect';
 import { TD, TR } from '../../../components/ui/Table';
 
 const LockerMaster = () => {
@@ -156,17 +157,12 @@ const LockerMaster = () => {
                 onChange={(e) => setFormData({ ...formData, lockerName: e.target.value.toUpperCase() })}
                 placeholder="e.g. LKR-001"
               />
-              <Select
+              <BranchSelect
                 label="Branch Name"
                 required
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              >
-                <option value="">Select Branch</option>
-                {branches.map(b => (
-                  <option key={b._id} value={b.branchName}>{b.branchName}</option>
-                ))}
-              </Select>
+              />
             </div>
             
             <Select

@@ -9,6 +9,7 @@ import PageHeader from '../../components/ui/PageHeader';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Button from '../../components/ui/Button';
+import BranchSelect from '../../components/ui/BranchSelect';
 
 const API = '';
 
@@ -279,17 +280,11 @@ const HRForm = () => {
                   Work Information
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Select
+                  <BranchSelect
                     label="Branch"
                     name="branch"
                     value={formData.branch}
                     onChange={handleChange}
-                    options={[
-                      { label: 'Head Office', value: 'HEADOFFICE' },
-                      { label: 'Trichy', value: 'TRICHY' },
-                      { label: 'Pudukkottai', value: 'PUDUKKOTTAI' },
-                      { label: 'Thanjavur', value: 'THANJAVUR' }
-                    ]}
                   />
                   <Select
                     label="Department"

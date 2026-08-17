@@ -10,6 +10,7 @@ import Badge from '../../components/ui/Badge';
 import DataTable from '../../components/ui/DataTable';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import { TD, TR } from '../../components/ui/Table';
+import BranchSelect from '../../components/ui/BranchSelect';
 
 const AssetMaster = () => {
   const [assets, setAssets] = useState([]);
@@ -254,17 +255,12 @@ const AssetMaster = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Select
+              <BranchSelect
                 label="Branch"
                 required
                 value={formData.branch}
                 onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
-              >
-                <option value="">Select Branch</option>
-                {branches.map(b => (
-                  <option key={b._id} value={b.branchName}>{b.branchName}</option>
-                ))}
-              </Select>
+              />
               <Select
                 label="Department"
                 value={formData.department}
