@@ -73,6 +73,7 @@ const BorrowerList = () => {
             onChange={(e) => setSelectedBranch(e.target.value)}
             showAllOption
             containerClassName="w-full md:w-64"
+            label=""
           />
         </div>
 
