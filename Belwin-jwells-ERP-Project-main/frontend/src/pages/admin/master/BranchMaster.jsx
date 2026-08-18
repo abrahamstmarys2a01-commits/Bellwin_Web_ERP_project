@@ -24,7 +24,7 @@ const BranchMaster = () => {
     branchName: '',
     branchManager: '',
     contactNumber: '',
-    email: '',
+    email: '@gmail.com',
     address: '',
     city: '',
     state: '',
@@ -60,7 +60,7 @@ const BranchMaster = () => {
       branchName: '',
       branchManager: '',
       contactNumber: '',
-      email: '',
+      email: '@gmail.com',
       address: '',
       city: '',
       state: '',
@@ -76,6 +76,7 @@ const BranchMaster = () => {
     setEditingBranch(b);
     setFormData({
       ...b,
+      email: b.email || '@gmail.com',
       openingDate: b.openingDate ? b.openingDate.split('T')[0] : ''
     });
     setIsFormOpen(true);
@@ -84,6 +85,9 @@ const BranchMaster = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.branchName || !formData.city) return alert('Fill required fields');
+    if (formData.contactNumber && formData.contactNumber.length !== 10) return alert('Contact Number must be 10 digits');
+    if (formData.pinCode && formData.pinCode.length !== 6) return alert('PIN Code must be 6 digits');
+    if (formData.email && !formData.email.endsWith('@gmail.com')) return alert('Email must be a valid @gmail.com address');
 
     setLoading(true);
     try {
@@ -142,8 +146,27 @@ const BranchMaster = () => {
               <Input label="Branch Code" disabled value={formData.branchCode || 'Auto-generated'} onChange={(e) => setFormData({ ...formData, branchCode: e.target.value })} />
               <Input label="Branch Name" required value={formData.branchName} onChange={(e) => setFormData({ ...formData, branchName: e.target.value })} />
               <Input label="Branch Manager" value={formData.branchManager} onChange={(e) => setFormData({ ...formData, branchManager: e.target.value })} />
-              <Input label="Contact Number" value={formData.contactNumber} onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })} />
-              <Input label="Email" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+              <Input label="Contact Number" value={formData.contactNumber} onChange={(e) => {
+                const val = e.target.value;
+                if (val !== '' && !/^[0-9]+$/.test(val)) return;
+                if (val.length > 10) return;
+                setFormData({ ...formData, contactNumber: val });
+              }} />
+              <Input label="Email" type="email" value={formData.email} onChange={(e) => {
+                const val = e.target.value;
+                if (/[A-Z]/.test(val)) return;
+                if (val === '') {
+                  setFormData({ ...formData, email: '@gmail.com' });
+                  return;
+                }
+                if (!val.endsWith('@gmail.com')) {
+                  const atIndex = val.indexOf('@');
+                  const prefix = atIndex !== -1 ? val.slice(0, atIndex) : val;
+                  setFormData({ ...formData, email: `${prefix}@gmail.com` });
+                  return;
+                }
+                setFormData({ ...formData, email: val });
+              }} />
               <Input label="GST Number" value={formData.gstNumber} onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })} />
               
               <div className="md:col-span-2">
@@ -153,7 +176,12 @@ const BranchMaster = () => {
 
               <Input label="City" required value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} />
               <Input label="State" value={formData.state} onChange={(e) => setFormData({ ...formData, state: e.target.value })} />
-              <Input label="PIN Code" value={formData.pinCode} onChange={(e) => setFormData({ ...formData, pinCode: e.target.value })} />
+              <Input label="PIN Code" value={formData.pinCode} onChange={(e) => {
+                const val = e.target.value;
+                if (val !== '' && !/^[0-9]+$/.test(val)) return;
+                if (val.length > 6) return;
+                setFormData({ ...formData, pinCode: val });
+              }} />
               
               <Input label="Opening Date" type="date" value={formData.openingDate} onChange={(e) => setFormData({ ...formData, openingDate: e.target.value })} />
               

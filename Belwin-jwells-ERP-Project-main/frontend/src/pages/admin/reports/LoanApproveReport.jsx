@@ -80,7 +80,17 @@ const LoanApproveReport = () => {
         status: l.status
       }));
 
-      setData(tableData);
+      // De-duplicate tableData by loanNo
+      const uniqueTableData = [];
+      const seenLoans = new Set();
+      tableData.forEach(item => {
+        if (item.loanNo && !seenLoans.has(item.loanNo)) {
+          seenLoans.add(item.loanNo);
+          uniqueTableData.push(item);
+        }
+      });
+
+      setData(uniqueTableData);
     } catch (err) {
       console.error(err);
       toast.error('Failed to load approved loans data');
@@ -98,6 +108,7 @@ const LoanApproveReport = () => {
     fetchData();
   };
 
+  const showReport = !filters.branch || data.length > 0;
   // Calculate summary metrics
   const totalLoansCount = data.length;
   const totalApprovedAmount = data.reduce((acc, curr) => acc + (curr.approvedAmount || 0), 0);
@@ -110,8 +121,8 @@ const LoanApproveReport = () => {
         icon={FileText} 
         actions={
           <div className="flex gap-2">
-            <Button variant="secondary" icon={Printer} onClick={handlePrint}>Print</Button>
-            <Button variant="secondary" icon={Download} onClick={() => {
+            <Button variant="secondary" icon={Printer} onClick={handlePrint} disabled={!showReport}>Print</Button>
+            <Button variant="secondary" icon={Download} disabled={!showReport} onClick={() => {
               const headers = [
                 { label: 'Loan No', key: 'loanNo' },
                 { label: 'Borrower', key: 'borrower' },
@@ -122,7 +133,7 @@ const LoanApproveReport = () => {
               ];
               exportToExcel(data, headers, null, 'Approved_Loans');
             }}>Export Excel</Button>
-            <Button variant="primary" icon={Download} onClick={() => {
+            <Button variant="primary" icon={Download} disabled={!showReport} onClick={() => {
               const headers = [
                 { label: 'Loan No', key: 'loanNo' },
                 { label: 'Borrower', key: 'borrower' },
@@ -138,20 +149,22 @@ const LoanApproveReport = () => {
       />
       
       {/* Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="p-6 bg-green-600 rounded-sm shadow-md">
-          <h3 className="text-sm font-bold text-green-100 mb-1 drop-shadow-sm">Total Approved Loans ({filters.dateRange})</h3>
-          <p className="text-3xl font-extrabold text-white drop-shadow-md">{totalLoansCount}</p>
+      {showReport && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="p-6 bg-green-600 rounded-sm shadow-md">
+            <h3 className="text-sm font-bold text-green-100 mb-1 drop-shadow-sm">Total Approved Loans ({filters.dateRange})</h3>
+            <p className="text-3xl font-extrabold text-white drop-shadow-md">{totalLoansCount}</p>
+          </div>
+          <div className="p-6 bg-blue-600 rounded-sm shadow-md">
+            <h3 className="text-sm font-bold text-blue-100 mb-1 drop-shadow-sm">Total Approved Amount</h3>
+            <p className="text-3xl font-extrabold text-white drop-shadow-md">₹{totalApprovedAmount.toLocaleString('en-IN')}</p>
+          </div>
+          <div className="p-6 bg-purple-600 rounded-sm shadow-md">
+            <h3 className="text-sm font-bold text-purple-100 mb-1 drop-shadow-sm">Filter Active</h3>
+            <p className="text-lg font-extrabold text-white drop-shadow-md">{filters.branch || 'All Branches'} • {filters.dateRange}</p>
+          </div>
         </div>
-        <div className="p-6 bg-blue-600 rounded-sm shadow-md">
-          <h3 className="text-sm font-bold text-blue-100 mb-1 drop-shadow-sm">Total Approved Amount</h3>
-          <p className="text-3xl font-extrabold text-white drop-shadow-md">₹{totalApprovedAmount.toLocaleString('en-IN')}</p>
-        </div>
-        <div className="p-6 bg-purple-600 rounded-sm shadow-md">
-          <h3 className="text-sm font-bold text-purple-100 mb-1 drop-shadow-sm">Filter Active</h3>
-          <p className="text-lg font-extrabold text-white drop-shadow-md">{filters.branch || 'All Branches'} • {filters.dateRange}</p>
-        </div>
-      </div>
+      )}
 
       <div className="mb-6">
         <form onSubmit={handleFilter} className="flex flex-col md:flex-row gap-4 items-end form-spiritual-bg">
@@ -180,41 +193,47 @@ const LoanApproveReport = () => {
         </form>
       </div>
 
-      <div className="shadow-sm border border-gray-100">
-        <div className="p-4 border-b border-gray-100 bg-gray-50/50">
-          <h3 className="text-lg font-semibold text-gray-800">Approved Loans List</h3>
+      {showReport ? (
+        <div className="shadow-sm border border-gray-100">
+          <div className="p-4 border-b border-gray-100 bg-gray-50/50">
+            <h3 className="text-lg font-semibold text-gray-800">Approved Loans List</h3>
+          </div>
+          <DataTable
+            headers={['Loan No', 'Borrower', 'Approved Amount', 'Approval Date', 'Created & Approved', 'Status']}
+            data={data}
+            loading={loading}
+            renderRow={(item) => (
+              <TR key={item._id}>
+                <TD className="font-bold text-gray-800">{item.loanNo}</TD>
+                <TD className="font-semibold text-gray-700">{item.borrower}</TD>
+                <TD className="font-bold text-green-600">₹{item.approvedAmount.toLocaleString('en-IN')}</TD>
+                <TD>{item.approvalDate}</TD>
+                <TD>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-gray-500 w-16">Created:</span>
+                      <span className="text-gray-800 font-medium">{item.employeeName || 'Admin'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-gray-500 w-16">Approved:</span>
+                      <span className="text-green-700 font-medium">Admin</span>
+                    </div>
+                  </div>
+                </TD>
+                <TD>
+                  <span className={`px-2 py-1 rounded-none text-xs font-medium ${item.status === 'Active' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+                    {item.status}
+                  </span>
+                </TD>
+              </TR>
+            )}
+          />
         </div>
-        <DataTable
-          headers={['Loan No', 'Borrower', 'Approved Amount', 'Approval Date', 'Created & Approved', 'Status']}
-          data={data}
-          loading={loading}
-          renderRow={(item) => (
-            <TR key={item._id}>
-              <TD className="font-bold text-gray-800">{item.loanNo}</TD>
-              <TD className="font-semibold text-gray-700">{item.borrower}</TD>
-              <TD className="font-bold text-green-600">₹{item.approvedAmount.toLocaleString('en-IN')}</TD>
-              <TD>{item.approvalDate}</TD>
-              <TD>
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="text-gray-500 w-16">Created:</span>
-                    <span className="text-gray-800 font-medium">{item.employeeName || 'Admin'}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="text-gray-500 w-16">Approved:</span>
-                    <span className="text-green-700 font-medium">Admin</span>
-                  </div>
-                </div>
-              </TD>
-              <TD>
-                <span className={`px-2 py-1 rounded-none text-xs font-medium ${item.status === 'Active' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
-                  {item.status}
-                </span>
-              </TD>
-            </TR>
-          )}
-        />
-      </div>
+      ) : (
+        <div className="text-center py-20 border border-dashed border-gray-300 text-gray-500 bg-white">
+          No data available for the selected branch.
+        </div>
+      )}
     </div>
   );
 };

@@ -80,17 +80,25 @@ const MfiEmiCollectionReport = () => {
         filteredData = filteredData.filter(d => d.collectedBy.toLowerCase().includes(filters.employee.toLowerCase()));
       }
 
-
+      // De-duplicate filteredData by receiptNo
+      const uniqueFilteredData = [];
+      const seenReceipts = new Set();
+      filteredData.forEach(item => {
+        if (item.receiptNo && !seenReceipts.has(item.receiptNo)) {
+          seenReceipts.add(item.receiptNo);
+          uniqueFilteredData.push(item);
+        }
+      });
 
       const empStats = {};
       let total = 0;
-      filteredData.forEach(d => {
+      uniqueFilteredData.forEach(d => {
         total += d.amount;
         if (!empStats[d.collectedBy]) empStats[d.collectedBy] = 0;
         empStats[d.collectedBy] += d.amount;
       });
 
-      setData(filteredData);
+      setData(uniqueFilteredData);
       setSummary({ totalAmount: total, employeeStats: empStats });
     } catch (error) {
       console.error(error);
@@ -109,6 +117,8 @@ const MfiEmiCollectionReport = () => {
     fetchData();
   };
 
+  const showReport = !filters.branch || data.length > 0;
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 animate-fade-in">
       <PageHeader 
@@ -117,8 +127,8 @@ const MfiEmiCollectionReport = () => {
         icon={FileText} 
         actions={
           <div className="flex gap-2">
-            <Button variant="secondary" icon={Printer} onClick={handlePrint}>Print</Button>
-            <Button variant="secondary" icon={Download} onClick={() => {
+            <Button variant="secondary" icon={Printer} onClick={handlePrint} disabled={!showReport}>Print</Button>
+            <Button variant="secondary" icon={Download} disabled={!showReport} onClick={() => {
               const headers = [
                 { label: 'Receipt No', key: 'receiptNo' },
                 { label: 'Loan No', key: 'loanNo' },
@@ -130,7 +140,7 @@ const MfiEmiCollectionReport = () => {
               ];
               exportToExcel(data, headers, null, 'MFI_EMI_Collections');
             }}>Export Excel</Button>
-            <Button variant="primary" icon={Download} onClick={() => {
+            <Button variant="primary" icon={Download} disabled={!showReport} onClick={() => {
               const headers = [
                 { label: 'Receipt No', key: 'receiptNo' },
                 { label: 'Loan No', key: 'loanNo' },
@@ -147,26 +157,28 @@ const MfiEmiCollectionReport = () => {
       />
       
       {/* Top Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="p-6 bg-green-600 rounded-sm shadow-md col-span-1 md:col-span-2 flex flex-col justify-center">
-          <h3 className="text-sm font-bold text-green-100 mb-1 drop-shadow-sm">Total MFI Collection ({filters.dateRange})</h3>
-          <p className="text-4xl font-extrabold text-white drop-shadow-md tracking-tight">₹{summary.totalAmount.toLocaleString('en-IN')}</p>
+      {showReport && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="p-6 bg-green-600 rounded-sm shadow-md col-span-1 md:col-span-2 flex flex-col justify-center">
+            <h3 className="text-sm font-bold text-green-100 mb-1 drop-shadow-sm">Total MFI Collection ({filters.dateRange})</h3>
+            <p className="text-4xl font-extrabold text-white drop-shadow-md tracking-tight">₹{summary.totalAmount.toLocaleString('en-IN')}</p>
+          </div>
+          
+          <div className="p-4 rounded-sm shadow-md bg-blue-600 flex flex-col max-h-32 overflow-y-auto">
+            <h3 className="text-xs font-bold text-blue-100 uppercase tracking-wider mb-2 border-b border-blue-400 pb-1">Agent-wise Collection</h3>
+            {Object.entries(summary.employeeStats).length > 0 ? (
+              Object.entries(summary.employeeStats).map(([emp, amount]) => (
+                <div key={emp} className="flex justify-between items-center py-1">
+                  <span className="text-sm font-medium text-white">{emp}</span>
+                  <span className="text-sm font-bold text-white">₹{amount.toLocaleString('en-IN')}</span>
+                </div>
+              ))
+            ) : (
+              <span className="text-sm text-blue-200 italic">No collections found.</span>
+            )}
+          </div>
         </div>
-        
-        <div className="p-4 rounded-sm shadow-md bg-blue-600 flex flex-col max-h-32 overflow-y-auto">
-          <h3 className="text-xs font-bold text-blue-100 uppercase tracking-wider mb-2 border-b border-blue-400 pb-1">Agent-wise Collection</h3>
-          {Object.entries(summary.employeeStats).length > 0 ? (
-            Object.entries(summary.employeeStats).map(([emp, amount]) => (
-              <div key={emp} className="flex justify-between items-center py-1">
-                <span className="text-sm font-medium text-white">{emp}</span>
-                <span className="text-sm font-bold text-white">₹{amount.toLocaleString('en-IN')}</span>
-              </div>
-            ))
-          ) : (
-            <span className="text-sm text-blue-200 italic">No collections found.</span>
-          )}
-        </div>
-      </div>
+      )}
 
       <div className="mb-6">
         <form onSubmit={handleFilter} className="flex flex-col md:flex-row gap-4 items-end form-spiritual-bg">
@@ -208,38 +220,44 @@ const MfiEmiCollectionReport = () => {
         </form>
       </div>
 
-      <div className="shadow-sm border border-gray-100">
-        <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-gray-800">Collection Details</h3>
-        </div>
-        <DataTable
-          headers={['Receipt No', 'Loan No', 'Borrower', 'Collected Amount', 'Date', 'Payment Mode', 'Collected By']}
-          data={data}
-          loading={loading}
-          renderRow={(item) => (
-            <TR key={item._id}>
-              <TD className="font-bold text-gray-800">{item.receiptNo}</TD>
-              <TD className="font-semibold text-gray-600">{item.loanNo}</TD>
-              <TD className="font-semibold text-gray-700">{item.borrower}</TD>
-              <TD className="font-bold text-green-600 text-base">₹{item.amount.toLocaleString('en-IN')}</TD>
-              <TD>{item.collectionDate}</TD>
-              <TD>
-                <span className="px-2 py-1 rounded border text-xs font-medium bg-blue-50 text-blue-700 border-blue-200">
-                  {item.paymentMode}
-                </span>
-              </TD>
-              <TD className="text-gray-700 font-medium">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
-                    {item.collectedBy.charAt(0).toUpperCase()}
+      {showReport ? (
+        <div className="shadow-sm border border-gray-100">
+          <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+            <h3 className="text-lg font-semibold text-gray-800">Collection Details</h3>
+          </div>
+          <DataTable
+            headers={['Receipt No', 'Loan No', 'Borrower', 'Collected Amount', 'Date', 'Payment Mode', 'Collected By']}
+            data={data}
+            loading={loading}
+            renderRow={(item) => (
+              <TR key={item._id}>
+                <TD className="font-bold text-gray-800">{item.receiptNo}</TD>
+                <TD className="font-semibold text-gray-600">{item.loanNo}</TD>
+                <TD className="font-semibold text-gray-700">{item.borrower}</TD>
+                <TD className="font-bold text-green-600 text-base">₹{item.amount.toLocaleString('en-IN')}</TD>
+                <TD>{item.collectionDate}</TD>
+                <TD>
+                  <span className="px-2 py-1 rounded border text-xs font-medium bg-blue-50 text-blue-700 border-blue-200">
+                    {item.paymentMode}
+                  </span>
+                </TD>
+                <TD className="text-gray-700 font-medium">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
+                      {item.collectedBy.charAt(0).toUpperCase()}
+                    </div>
+                    {item.collectedBy}
                   </div>
-                  {item.collectedBy}
-                </div>
-              </TD>
-            </TR>
-          )}
-        />
-      </div>
+                </TD>
+              </TR>
+            )}
+          />
+        </div>
+      ) : (
+        <div className="text-center py-20 border border-dashed border-gray-300 text-gray-500 bg-white">
+          No data available for the selected branch.
+        </div>
+      )}
     </div>
   );
 };

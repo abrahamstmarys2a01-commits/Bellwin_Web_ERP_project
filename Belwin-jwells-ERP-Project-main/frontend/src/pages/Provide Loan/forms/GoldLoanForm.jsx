@@ -151,6 +151,8 @@ const GoldLoanForm = ({
           gramRate: a.gramRate || '',
           total: a.total || ''
         })));
+      } else {
+        setArticles([ { ...emptyArticle } ]);
       }
       
       if (selectedLoan.payments) {
@@ -164,6 +166,7 @@ const GoldLoanForm = ({
       }
     } else {
       setCapturedImage(null);
+      setArticles([ { ...emptyArticle } ]);
     }
   }, [selectedLoan]);
 
@@ -176,12 +179,12 @@ const GoldLoanForm = ({
         documentCharge: schemeData.documentCharges || prev.documentCharge
       }));
       
-      // Auto-fill gramRate for new articles
-      if (articles.length === 1 && !articles[0].category) {
+      // Auto-fill gramRate for new articles only (not when editing an existing loan)
+      if (!selectedLoan && articles.length === 1 && !articles[0].category) {
          setArticles([{ ...articles[0], gramRate: schemeData.gramRate || '' }]);
       }
     }
-  }, [schemeData]);
+  }, [schemeData, selectedLoan]);
 
   // --- Auto-calculate Matured Date on Start Date or Scheme change ---
   useEffect(() => {
@@ -294,7 +297,7 @@ const GoldLoanForm = ({
           receiptAmount: Number(receiptEntry.receiptAmount) || 0
         },
         
-        articles: articles.filter(a => a.category).map(a => ({
+        articles: articles.filter(a => a.category || a.jewelDetails || a.totWeight).map(a => ({
           category: a.category,
           details: a.jewelDetails,
           qty: Number(a.quantity) || 0,
@@ -513,7 +516,7 @@ const GoldLoanForm = ({
               <tbody>
                 {articles.map((art, idx) => (
                   <tr key={idx} className="bg-white border-b border-gray-200 hover:bg-gray-50">
-                    <td className="p-0 border-r border-gray-200"><input className="w-full h-full px-2 py-1.5 focus:outline-none" value={art.category} onChange={e => handleArticleChange(idx, 'category', e.target.value)} /></td>
+                    <td className="p-0 border-r border-gray-200"><input className="w-full h-full px-2 py-1.5 focus:outline-none" value={art.category} onChange={e => handleArticleChange(idx, 'category', e.target.value)} list="jewellery-categories" /></td>
                     <td className="p-0 border-r border-gray-200"><input className="w-full h-full px-2 py-1.5 focus:outline-none" value={art.jewelDetails} onChange={e => handleArticleChange(idx, 'jewelDetails', e.target.value)} /></td>
                     <td className="p-0 border-r border-gray-200"><input type="number" className="w-full h-full px-2 py-1.5 focus:outline-none text-center" value={art.quantity} onChange={e => handleArticleChange(idx, 'quantity', e.target.value)} /></td>
                     <td className="p-0 border-r border-gray-200"><input type="number" className="w-full h-full px-2 py-1.5 focus:outline-none text-center" value={art.totWeight} onChange={e => handleArticleChange(idx, 'totWeight', e.target.value)} /></td>
@@ -592,6 +595,30 @@ const GoldLoanForm = ({
           </div>
         </div>
       )}
+
+      {/* Datalist for Jewellery Categories autocomplete */}
+      <datalist id="jewellery-categories">
+        <option value="Necklace" />
+        <option value="Chain" />
+        <option value="Bangle" />
+        <option value="Bracelet" />
+        <option value="Ring" />
+        <option value="Earring" />
+        <option value="Pendant" />
+        <option value="Nose Ring / Nose Pin" />
+        <option value="Anklet" />
+        <option value="Toe Ring" />
+        <option value="Mangalsutra / Thali" />
+        <option value="Jewellery Set" />
+        <option value="Brooch" />
+        <option value="Hair Jewellery" />
+        <option value="Kids Jewellery" />
+        <option value="Gold Coin" />
+        <option value="Gold Bar" />
+        <option value="Silver Jewellery" />
+        <option value="Diamond Jewellery" />
+        <option value="Platinum Jewellery" />
+      </datalist>
 
     </div>
   );

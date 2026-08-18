@@ -24,7 +24,7 @@ const HRForm = () => {
 
   const initialFormState = {
     firstName: '', lastName: '',
-    mobile: '', email: '',
+    mobile: '', email: '@gmail.com',
     address: '', city: '', state: '',
     branch: 'HEADOFFICE', department: 'HR',
     designation: 'HR MANAGER',
@@ -54,7 +54,23 @@ const HRForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'mobile' && value !== '' && !/^[0-9]+$/.test(value)) return;
+    if (name === 'mobile') {
+      if (value !== '' && !/^[0-9]+$/.test(value)) return;
+      if (value.length > 10) return;
+    }
+    if (name === 'email') {
+      if (/[A-Z]/.test(value)) return;
+      if (value === '') {
+        setFormData(p => ({ ...p, email: '@gmail.com' }));
+        return;
+      }
+      if (!value.endsWith('@gmail.com')) {
+        const atIndex = value.indexOf('@');
+        const prefix = atIndex !== -1 ? value.slice(0, atIndex) : value;
+        setFormData(p => ({ ...p, email: `${prefix}@gmail.com` }));
+        return;
+      }
+    }
     const upper = ['firstName', 'lastName', 'address', 'city', 'state', 'designation'];
     setFormData((p) => ({ ...p, [name]: upper.includes(name) ? value.toUpperCase() : value }));
     if (errors[name]) setErrors((p) => ({ ...p, [name]: '' }));
@@ -87,7 +103,14 @@ const HRForm = () => {
   const validate = () => {
     const e = {};
     if (!formData.firstName.trim()) e.firstName = 'Full name is required';
-    if (!formData.email.trim()) e.email = 'Email is required';
+    if (!formData.email.trim()) {
+      e.email = 'Email is required';
+    } else if (!formData.email.endsWith('@gmail.com')) {
+      e.email = 'Email must be a valid @gmail.com address';
+    }
+    if (formData.mobile && formData.mobile.length !== 10) {
+      e.mobile = 'Mobile number must be 10 digits';
+    }
     if (!formData.designation.trim()) e.designation = 'Designation is required';
     if (!formData.joiningDate) e.joiningDate = 'Joining date is required';
     if (!formData.username.trim()) e.username = 'Username is required';
@@ -246,6 +269,7 @@ const HRForm = () => {
                   <Input label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Enter last name" />
                   <div>
                     <Input label="Mobile Number" name="mobile" value={formData.mobile} onChange={handleChange} placeholder="10-digit mobile" maxLength={10} />
+                    {errors.mobile && <p className="text-red-500 text-xs mt-1">{errors.mobile}</p>}
                   </div>
                   <div>
                     <Input label="Email *" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="email@example.com" />

@@ -77,8 +77,17 @@ const MfiLedgerStatement = () => {
         status: l.status || 'Active',
         date: l.applicationDate
       }));
+      // De-duplicate tableData by loanNo
+      const uniqueTableData = [];
+      const seenLoans = new Set();
+      tableData.forEach(item => {
+        if (item.loanNo && !seenLoans.has(item.loanNo)) {
+          seenLoans.add(item.loanNo);
+          uniqueTableData.push(item);
+        }
+      });
 
-      setData(tableData);
+      setData(uniqueTableData);
     } catch (err) {
       console.error(err);
       toast.error('Failed to load MFI ledger data');

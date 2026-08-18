@@ -139,7 +139,16 @@ const CustomerEdit = () => {
   }, [location.state]);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if ((name === 'mobileNumber' || name === 'alternateNumber') && value !== '' && !/^[0-9]+$/.test(value)) return;
+    // Mobile validation
+    if (name === 'mobileNumber' || name === 'alternateNumber') {
+      if (value !== '' && !/^[0-9]+$/.test(value)) return;
+      if (value.length > 10) return;
+    }
+    // Pincode validation
+    if (name === 'postalCode') {
+      if (value !== '' && !/^[0-9]+$/.test(value)) return;
+      if (value.length > 6) return;
+    }
     setFormData(prev => ({ ...prev, [name]: value.toUpperCase() }));
   };
 

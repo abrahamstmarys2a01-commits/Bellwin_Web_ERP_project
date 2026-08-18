@@ -74,7 +74,17 @@ const LoanOutstandingReport = () => {
         status: item.status
       }));
 
-      setData(formattedData);
+      // De-duplicate formattedData by loanNo
+      const uniqueData = [];
+      const seenLoans = new Set();
+      formattedData.forEach(item => {
+        if (item.loanNo && !seenLoans.has(item.loanNo)) {
+          seenLoans.add(item.loanNo);
+          uniqueData.push(item);
+        }
+      });
+
+      setData(uniqueData);
     } catch (error) {
       console.error(error);
       toast.error('Failed to fetch outstanding report');
@@ -92,6 +102,7 @@ const LoanOutstandingReport = () => {
     fetchData();
   };
 
+  const showReport = !filters.branch || data.length > 0;
   // Calculate summary metrics
   const totalLoansCount = data.length;
   const totalOutstanding = data.reduce((acc, curr) => acc + curr.outstandingBalance, 0);
@@ -104,8 +115,8 @@ const LoanOutstandingReport = () => {
         icon={FileText} 
         actions={
           <div className="flex gap-2">
-            <Button variant="secondary" icon={Printer} onClick={handlePrint}>Print</Button>
-            <Button variant="secondary" icon={Download} onClick={() => {
+            <Button variant="secondary" icon={Printer} onClick={handlePrint} disabled={!showReport}>Print</Button>
+            <Button variant="secondary" icon={Download} disabled={!showReport} onClick={() => {
               const headers = [
                 { label: 'Loan No', key: 'loanNo' },
                 { label: 'Customer Name', key: 'borrower' },
@@ -116,7 +127,7 @@ const LoanOutstandingReport = () => {
               ];
               exportToExcel(data, headers, null, 'Loan_Outstanding');
             }}>Export Excel</Button>
-            <Button variant="primary" icon={Download} onClick={() => {
+            <Button variant="primary" icon={Download} disabled={!showReport} onClick={() => {
               const headers = [
                 { label: 'Loan No', key: 'loanNo' },
                 { label: 'Customer Name', key: 'borrower' },
@@ -132,20 +143,22 @@ const LoanOutstandingReport = () => {
       />
       
       {/* Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="p-6 bg-blue-600 rounded-sm shadow-md">
-          <h3 className="text-sm font-bold text-blue-100 mb-1 drop-shadow-sm">Total Outstanding Exposure</h3>
-          <p className="text-4xl font-extrabold text-white drop-shadow-md tracking-tight">₹{totalOutstanding.toLocaleString('en-IN')}</p>
+      {showReport && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="p-6 bg-blue-600 rounded-sm shadow-md">
+            <h3 className="text-sm font-bold text-blue-100 mb-1 drop-shadow-sm">Total Outstanding Exposure</h3>
+            <p className="text-4xl font-extrabold text-white drop-shadow-md tracking-tight">₹{totalOutstanding.toLocaleString('en-IN')}</p>
+          </div>
+          <div className="p-6 bg-indigo-600 rounded-sm shadow-md">
+            <h3 className="text-sm font-bold text-indigo-100 mb-1 drop-shadow-sm">Active Loan Accounts</h3>
+            <p className="text-3xl font-extrabold text-white drop-shadow-md">{totalLoansCount}</p>
+          </div>
+          <div className="p-6 bg-purple-600 rounded-sm shadow-md">
+            <h3 className="text-sm font-bold text-purple-100 mb-1 drop-shadow-sm">Filter Active</h3>
+            <p className="text-lg font-extrabold text-white drop-shadow-md">{filters.branch || 'All Branches'} • {filters.dateRange}</p>
+          </div>
         </div>
-        <div className="p-6 bg-indigo-600 rounded-sm shadow-md">
-          <h3 className="text-sm font-bold text-indigo-100 mb-1 drop-shadow-sm">Active Loan Accounts</h3>
-          <p className="text-3xl font-extrabold text-white drop-shadow-md">{totalLoansCount}</p>
-        </div>
-        <div className="p-6 bg-purple-600 rounded-sm shadow-md">
-          <h3 className="text-sm font-bold text-purple-100 mb-1 drop-shadow-sm">Filter Active</h3>
-          <p className="text-lg font-extrabold text-white drop-shadow-md">{filters.branch || 'All Branches'} • {filters.dateRange}</p>
-        </div>
-      </div>
+      )}
 
       <div className="mb-6">
         <form onSubmit={handleFilter} className="flex flex-col md:flex-row gap-4 items-end form-spiritual-bg">
@@ -174,33 +187,39 @@ const LoanOutstandingReport = () => {
         </form>
       </div>
 
-      <div className="shadow-sm border border-gray-100">
-        <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-gray-800">Outstanding Balances</h3>
-          <span className="text-sm font-bold text-gray-600 bg-white px-3 py-1 rounded-full shadow-sm border">
-            Total: ₹{totalOutstanding.toLocaleString('en-IN')}
-          </span>
+      {showReport ? (
+        <div className="shadow-sm border border-gray-100">
+          <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+            <h3 className="text-lg font-semibold text-gray-800">Outstanding Balances</h3>
+            <span className="text-sm font-bold text-gray-600 bg-white px-3 py-1 rounded-full shadow-sm border">
+              Total: ₹{totalOutstanding.toLocaleString('en-IN')}
+            </span>
+          </div>
+          <DataTable
+            headers={['Loan No', 'Customer Name', 'Loan Amount', 'Paid Amount', 'Balance (Outstanding)', 'Status']}
+            data={data}
+            loading={loading}
+            renderRow={(item) => (
+              <TR key={item._id}>
+                <TD className="font-bold text-gray-800">{item.loanNo}</TD>
+                <TD className="font-semibold text-gray-700">{item.borrower}</TD>
+                <TD className="font-medium text-gray-600">₹{item.loanAmount.toLocaleString('en-IN')}</TD>
+                <TD className="font-medium text-green-600">₹{item.paidAmount.toLocaleString('en-IN')}</TD>
+                <TD className="font-bold text-orange-600 text-lg">₹{item.outstandingBalance.toLocaleString('en-IN')}</TD>
+                <TD>
+                  <span className={`px-2 py-1 rounded-none text-xs font-medium ${item.status === 'Active' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}>
+                    {item.status}
+                  </span>
+                </TD>
+              </TR>
+            )}
+          />
         </div>
-        <DataTable
-          headers={['Loan No', 'Customer Name', 'Loan Amount', 'Paid Amount', 'Balance (Outstanding)', 'Status']}
-          data={data}
-          loading={loading}
-          renderRow={(item) => (
-            <TR key={item._id}>
-              <TD className="font-bold text-gray-800">{item.loanNo}</TD>
-              <TD className="font-semibold text-gray-700">{item.borrower}</TD>
-              <TD className="font-medium text-gray-600">₹{item.loanAmount.toLocaleString('en-IN')}</TD>
-              <TD className="font-medium text-green-600">₹{item.paidAmount.toLocaleString('en-IN')}</TD>
-              <TD className="font-bold text-orange-600 text-lg">₹{item.outstandingBalance.toLocaleString('en-IN')}</TD>
-              <TD>
-                <span className={`px-2 py-1 rounded-none text-xs font-medium ${item.status === 'Active' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}>
-                  {item.status}
-                </span>
-              </TD>
-            </TR>
-          )}
-        />
-      </div>
+      ) : (
+        <div className="text-center py-20 border border-dashed border-gray-300 text-gray-500 bg-white">
+          No data available for the selected branch.
+        </div>
+      )}
     </div>
   );
 };

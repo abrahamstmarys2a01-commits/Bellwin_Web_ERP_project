@@ -23,7 +23,7 @@ const EmployeeMaster = () => {
     employeeName: '',
     employeeCode: '',
     mobileNumber: '',
-    email: '',
+    email: '@gmail.com',
     dateOfBirth: '',
     gender: 'Male',
     department: '',
@@ -66,7 +66,7 @@ const EmployeeMaster = () => {
       employeeName: '',
       employeeCode: '',
       mobileNumber: '',
-      email: '',
+      email: '@gmail.com',
       dateOfBirth: '',
       gender: 'Male',
       department: '',
@@ -89,6 +89,7 @@ const EmployeeMaster = () => {
     setEditingEmployee(emp);
     setFormData({
       ...emp,
+      email: emp.email || '@gmail.com',
       dateOfBirth: emp.dateOfBirth ? emp.dateOfBirth.split('T')[0] : '',
       joiningDate: emp.joiningDate ? emp.joiningDate.split('T')[0] : '',
     });
@@ -98,6 +99,8 @@ const EmployeeMaster = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.employeeName || !formData.mobileNumber) return alert('Fill required fields');
+    if (formData.mobileNumber.length !== 10) return alert('Mobile must be 10 digits');
+    if (formData.email && !formData.email.endsWith('@gmail.com')) return alert('Email must be a valid @gmail.com address');
 
     setLoading(true);
     try {
@@ -164,8 +167,27 @@ const EmployeeMaster = () => {
               <Input label="Employee ID" required disabled value={formData.employeeId} onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })} />
               <Input label="Employee Code" value={formData.employeeCode} onChange={(e) => setFormData({ ...formData, employeeCode: e.target.value })} />
               <Input label="Employee Name" required value={formData.employeeName} onChange={(e) => setFormData({ ...formData, employeeName: e.target.value })} />
-              <Input label="Mobile Number" required value={formData.mobileNumber} onChange={(e) => setFormData({ ...formData, mobileNumber: e.target.value })} />
-              <Input label="Email" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+               <Input label="Mobile Number" required value={formData.mobileNumber} onChange={(e) => {
+                const val = e.target.value;
+                if (val !== '' && !/^[0-9]+$/.test(val)) return;
+                if (val.length > 10) return;
+                setFormData({ ...formData, mobileNumber: val });
+              }} />
+              <Input label="Email" type="email" value={formData.email} onChange={(e) => {
+                const val = e.target.value;
+                if (/[A-Z]/.test(val)) return;
+                if (val === '') {
+                  setFormData({ ...formData, email: '@gmail.com' });
+                  return;
+                }
+                if (!val.endsWith('@gmail.com')) {
+                  const atIndex = val.indexOf('@');
+                  const prefix = atIndex !== -1 ? val.slice(0, atIndex) : val;
+                  setFormData({ ...formData, email: `${prefix}@gmail.com` });
+                  return;
+                }
+                setFormData({ ...formData, email: val });
+              }} />
               <Input label="Date of Birth" type="date" value={formData.dateOfBirth} onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })} />
               <Select label="Gender" value={formData.gender} onChange={(e) => setFormData({ ...formData, gender: e.target.value })}>
                 <option value="Male">Male</option>

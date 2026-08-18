@@ -95,6 +95,7 @@ const DealerMaster = () => {
     e.preventDefault();
     if (!formData.dealerName || !formData.dealerCode) return alert('Name and Code are required');
     if (formData.phone && formData.phone.length !== 10) return alert('Phone must be 10 digits');
+    if (formData.pincode && formData.pincode.length !== 6) return alert('Pincode must be 6 digits');
 
     setLoading(true);
     try {
@@ -179,6 +180,7 @@ const DealerMaster = () => {
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '' || /^[0-9]+$/.test(val)) {
+                  if (val.length > 10) return;
                   setFormData({ ...formData, phone: val });
                 }
               }}
@@ -209,6 +211,7 @@ const DealerMaster = () => {
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === '' || /^[0-9]+$/.test(val)) {
+                  if (val.length > 6) return;
                   setFormData({ ...formData, pincode: val });
                 }
               }}
